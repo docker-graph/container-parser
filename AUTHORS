@@ -1,0 +1,19 @@
+# Authors
+
+## Maintainers
+- Docker Graph Team <docker-graph@network.ru.net>
+
+## Contributors
+- Initial implementation and design
+
+## Contact
+- GitHub: https://github.com/docker-graph
+- Issues: https://github.com/docker-graph/container-parser/issues
+
+## Acknowledgments
+- Thanks to the Docker community for the Docker specification
+- Inspired by various Docker Container parsing libraries
+- Built with Go and gopkg.in/yaml.v3
+
+This file lists the contributors to the container-parser project.
+If you contribute to this project, please add your name here.
