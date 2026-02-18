@@ -230,7 +230,7 @@ type VolumeMountInfo struct {
 type VolumeDetail struct {
 	Volume
 	Containers []VolumeMountInfo `json:"containers,omitempty"`
-	Size       string            `json:"size,omitempty"` // Human readable size
+	Size       string            `json:"size,omitempty"`
 }
 
 // VolumeSummary represents summary information for volume listing
