@@ -133,17 +133,21 @@ type Mount struct {
 
 // ContainerSummary представляет краткую информацию о контейнере для списка
 type ContainerSummary struct {
-	ID         string    `json:"id"`
-	Name       string    `json:"name"`
-	Image      string    `json:"image"`
-	Status     string    `json:"status"`
-	State      string    `json:"state"`
-	Created    time.Time `json:"created"`
-	Uptime     string    `json:"uptime"`
-	CPUPercent float64   `json:"cpu_percent"`
-	MemPercent float64   `json:"mem_percent"`
-	NetworkRx  string    `json:"network_rx"`
-	NetworkTx  string    `json:"network_tx"`
+	ID             string            `json:"id"`
+	Name           string            `json:"name"`
+	Image          string            `json:"image"`
+	Status         string            `json:"status"`
+	State          string            `json:"state"`
+	Created        time.Time         `json:"created"`
+	Uptime         string            `json:"uptime"`
+	CPUPercent     float64           `json:"cpu_percent"`
+	MemPercent     float64           `json:"mem_percent"`
+	NetworkRx      string            `json:"network_rx"`
+	NetworkTx      string            `json:"network_tx"`
+	IsCompose      bool              `json:"is_compose"`
+	ComposeProject string            `json:"compose_project,omitempty"`
+	ComposeService string            `json:"compose_service,omitempty"`
+	Labels         map[string]string `json:"labels,omitempty"`
 }
 
 // SystemInfo представляет информацию о системе Docker

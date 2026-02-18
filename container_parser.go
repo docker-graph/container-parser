@@ -52,13 +52,28 @@ func (c *Client) ListContainers(all bool) ([]ContainerSummary, error) {
 			strings.TrimPrefix(container.Names[0], "/"),
 			container.State)
 
+		labels := container.Labels
+		isCompose := false
+		composeProject := ""
+		composeService := ""
+
+		if project, ok := labels["com.docker.compose.project"]; ok {
+			isCompose = true
+			composeProject = project
+			composeService = labels["com.docker.compose.service"]
+		}
+
 		summary := ContainerSummary{
-			ID:      container.ID[:12],
-			Name:    strings.TrimPrefix(container.Names[0], "/"),
-			Image:   container.Image,
-			Status:  container.Status,
-			State:   container.State,
-			Created: time.Unix(container.Created, 0),
+			ID:             container.ID[:12],
+			Name:           strings.TrimPrefix(container.Names[0], "/"),
+			Image:          container.Image,
+			Status:         container.Status,
+			State:          container.State,
+			Created:        time.Unix(container.Created, 0),
+			Labels:         labels,
+			IsCompose:      isCompose,
+			ComposeProject: composeProject,
+			ComposeService: composeService,
 		}
 
 		// Получаем статистику для контейнера
