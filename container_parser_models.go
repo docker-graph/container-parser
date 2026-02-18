@@ -2,18 +2,14 @@ package container_parser
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/docker/docker/client"
 )
 
 type Client struct {
-	cli        *client.Client
-	ctx        context.Context
-	scanMutex  sync.Mutex
-	scanJobs   map[string]*VolumeScanJob
-	scanJobsMu sync.RWMutex
+	cli *client.Client
+	ctx context.Context
 }
 
 type VolumeScanJob struct {

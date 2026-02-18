@@ -25,9 +25,8 @@ func NewContainerParser() (*Client, error) {
 	}
 
 	return &Client{
-		cli:      cli,
-		ctx:      context.Background(),
-		scanJobs: make(map[string]*VolumeScanJob),
+		cli: cli,
+		ctx: context.Background(),
 	}, nil
 }
 
@@ -1323,53 +1322,4 @@ func (c *Client) ScanVolumeHierarchy(volumeName, path string) (*VolumeCache, err
 		UpdatedAt:  time.Now(),
 		Scanning:   false,
 	}, nil
-}
-
-// CreateScanJob создает задание на сканирование и сохраняет его в map
-func (c *Client) CreateScanJob(scanID, volumeName, path string) {
-	c.scanJobsMu.Lock()
-	defer c.scanJobsMu.Unlock()
-
-	c.scanJobs[scanID] = &VolumeScanJob{
-		ScanID:     scanID,
-		VolumeName: volumeName,
-		Path:       path,
-		Status:     "pending",
-		StartedAt:  time.Now(),
-	}
-}
-
-func (c *Client) UpdateScanJob(scanID string, updateFunc func(*VolumeScanJob)) {
-	c.scanJobsMu.Lock()
-	defer c.scanJobsMu.Unlock()
-
-	job, exists := c.scanJobs[scanID]
-	if !exists {
-		return
-	}
-	updateFunc(job)
-}
-
-// GetScanJob возвращает состояние задания сканирования
-func (c *Client) GetScanJob(scanID string) *VolumeScanJob {
-	c.scanJobsMu.RLock()
-	defer c.scanJobsMu.RUnlock()
-
-	job, exists := c.scanJobs[scanID]
-	if !exists {
-		return nil
-	}
-	return job
-}
-
-// GetAllScanJobs возвращает все задания сканирования
-func (c *Client) GetAllScanJobs() map[string]*VolumeScanJob {
-	c.scanJobsMu.RLock()
-	defer c.scanJobsMu.RUnlock()
-
-	result := make(map[string]*VolumeScanJob)
-	for k, v := range c.scanJobs {
-		result[k] = v
-	}
-	return result
 }
