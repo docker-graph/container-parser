@@ -30,6 +30,39 @@ func NewContainerParser() (*Client, error) {
 	}, nil
 }
 
+func extractNetworkInfo(inspect container.InspectResponse) (string, map[string]string, string) {
+	if inspect.NetworkSettings == nil || len(inspect.NetworkSettings.Networks) == 0 {
+		return "", nil, ""
+	}
+
+	networks := make(map[string]string)
+	var primaryIP, primaryGateway string
+	var firstNetwork string
+
+	// Собираем все сети
+	for netName, net := range inspect.NetworkSettings.Networks {
+		if net != nil && net.IPAddress != "" {
+			networks[netName] = net.IPAddress
+
+			// Запоминаем первый как "основной"
+			if firstNetwork == "" {
+				firstNetwork = netName
+				primaryIP = net.IPAddress
+				primaryGateway = net.Gateway
+			}
+
+			// Приоритет для сетей с "bridge" или "default" в названии
+			if strings.Contains(strings.ToLower(netName), "bridge") ||
+				strings.Contains(strings.ToLower(netName), "default") {
+				primaryIP = net.IPAddress
+				primaryGateway = net.Gateway
+			}
+		}
+	}
+
+	return primaryIP, networks, primaryGateway
+}
+
 // ListContainers возвращает список всех контейнеров
 func (c *Client) ListContainers(all bool) ([]ContainerSummary, error) {
 	containers, err := c.cli.ContainerList(c.ctx, container.ListOptions{
@@ -76,6 +109,12 @@ func (c *Client) ListContainers(all bool) ([]ContainerSummary, error) {
 			ComposeService: composeService,
 		}
 
+		inspect, err := c.cli.ContainerInspect(c.ctx, container.ID)
+		if err != nil {
+			fmt.Printf("Debug: Failed to inspect container %s: %v\n", container.ID[:12], err)
+		} else {
+			summary.IPAddress, summary.Networks, summary.Gateway = extractNetworkInfo(inspect)
+		}
 		// Получаем статистику для контейнера
 		stats, err := c.GetContainerStats(container.ID)
 		if err == nil {

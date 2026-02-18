@@ -148,6 +148,9 @@ type ContainerSummary struct {
 	ComposeProject string            `json:"compose_project,omitempty"`
 	ComposeService string            `json:"compose_service,omitempty"`
 	Labels         map[string]string `json:"labels,omitempty"`
+	IPAddress      string            `json:"ip_address,omitempty"`
+	Networks       map[string]string `json:"networks,omitempty"`
+	Gateway        string            `json:"gateway,omitempty"`
 }
 
 // SystemInfo представляет информацию о системе Docker
