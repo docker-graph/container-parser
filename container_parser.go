@@ -30,6 +30,25 @@ func NewContainerParser() (*Client, error) {
 	}, nil
 }
 
+// GetImageHistory возвращает инспектированные данные о контейнере
+func (c *Client) GetImageHistory(name string) (*ImageInspectHistory, error) {
+	ctx := context.Background()
+	history, err := c.cli.ImageHistory(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	inspect, err := c.cli.ImageInspect(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ImageInspectHistory{
+		History: history,
+		Inspect: inspect,
+	}, nil
+}
+
 func extractNetworkInfo(inspect container.InspectResponse) (string, map[string]string, string) {
 	if inspect.NetworkSettings == nil || len(inspect.NetworkSettings.Networks) == 0 {
 		return "", nil, ""

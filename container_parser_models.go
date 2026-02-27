@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 )
 
@@ -12,6 +13,10 @@ type Client struct {
 	ctx context.Context
 }
 
+type ImageInspectHistory struct {
+	History []image.HistoryResponseItem
+	Inspect image.InspectResponse
+}
 type VolumeScanJob struct {
 	ScanID      string
 	VolumeName  string
