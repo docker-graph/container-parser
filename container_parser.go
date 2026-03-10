@@ -360,7 +360,7 @@ func (c *Client) GetContainerStats(id string) (*ContainerStats, error) {
 	now := time.Now()
 	if !ok {
 		containersNetPerMinutes[id] = &NetPerSecond{
-			Started: now,
+			Started: time.Now(),
 			RxBytes: 0,
 			TxBytes: 0,
 		}
@@ -368,7 +368,7 @@ func (c *Client) GetContainerStats(id string) (*ContainerStats, error) {
 	elapsed := now.Sub(containersNetPerMinutes[id].Started).Seconds()
 	diff := elapsed >= 60.0
 	if diff {
-		containersNetPerMinutes[id].Started = now
+		containersNetPerMinutes[id].Started = time.Now()
 		containersNetPerMinutes[id].RxBytes = 0
 		containersNetPerMinutes[id].TxBytes = 0
 	}
@@ -376,6 +376,7 @@ func (c *Client) GetContainerStats(id string) (*ContainerStats, error) {
 	if networks, ok := statsJSON["networks"].(map[string]interface{}); ok {
 		for _, net := range networks {
 			if netMap, ok := net.(map[string]interface{}); ok {
+				fmt.Println(netMap)
 				if rxBytes, ok := netMap["rx_bytes"].(float64); ok {
 					netStats.RxBytes += uint64(rxBytes)
 					containersNetPerMinutes[id].RxBytes += uint64(rxBytes)
