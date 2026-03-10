@@ -1,5 +1,5 @@
 // Docker Container parser for Go
-// Version: v0.6.0
+// Version: v0.6.1
 // Author: Docker Graph Team
 // License: MIT
 module github.com/docker-graph/container-parser

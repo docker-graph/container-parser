@@ -143,6 +143,8 @@ func (c *Client) ListContainers(all bool) ([]ContainerSummary, error) {
 			summary.MemPercent = stats.MemoryUsage.Percent
 			summary.NetworkRx = formatBytes(stats.NetworkStats.RxBytes)
 			summary.NetworkTx = formatBytes(stats.NetworkStats.TxBytes)
+			summary.NetworkRxPS = formatBytes(stats.NetworksPerSecond.RxBytes)
+			summary.NetworkTxPS = formatBytes(stats.NetworksPerSecond.TxBytes)
 
 			// Рассчитываем uptime
 			if container.State == "running" {
