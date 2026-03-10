@@ -17,7 +17,7 @@ import (
 	"github.com/docker/docker/client"
 )
 
-var containersNetPerMinutes *NetPerSecond
+var containersNetPerMinutes map[string]*NetPerSecond
 
 // NewContainerParser создает новый Docker клиент
 func NewContainerParser() (*Client, error) {
@@ -25,11 +25,7 @@ func NewContainerParser() (*Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create docker client: %w", err)
 	}
-	containersNetPerMinutes = &NetPerSecond{
-		Started: time.Now(),
-		RxBytes: 0,
-		TxBytes: 0,
-	}
+	containersNetPerMinutes = map[string]*NetPerSecond{}
 	return &Client{
 		cli: cli,
 		ctx: context.Background(),
@@ -358,12 +354,20 @@ func (c *Client) GetContainerStats(id string) (*ContainerStats, error) {
 			memPercent = (float64(memoryUsage) / float64(memoryLimit)) * 100
 		}
 	}
+	_, ok := containersNetPerMinutes[id]
 	now := time.Now()
-	elapsed := now.Sub(containersNetPerMinutes.Started).Seconds()
+	if !ok {
+		containersNetPerMinutes[id] = &NetPerSecond{
+			Started: now,
+			RxBytes: 0,
+			TxBytes: 0,
+		}
+	}
+	elapsed := now.Sub(containersNetPerMinutes[id].Started).Seconds()
 	diff := elapsed >= 60.0
 	if diff {
-		containersNetPerMinutes.RxBytes = 0
-		containersNetPerMinutes.TxBytes = 0
+		containersNetPerMinutes[id].RxBytes = 0
+		containersNetPerMinutes[id].TxBytes = 0
 	}
 	// Пытаемся извлечь данные о сети
 	if networks, ok := statsJSON["networks"].(map[string]interface{}); ok {
@@ -372,13 +376,13 @@ func (c *Client) GetContainerStats(id string) (*ContainerStats, error) {
 				if rxBytes, ok := netMap["rx_bytes"].(float64); ok {
 					netStats.RxBytes += uint64(rxBytes)
 					if !diff {
-						containersNetPerMinutes.RxBytes += uint64(rxBytes)
+						containersNetPerMinutes[id].RxBytes += uint64(rxBytes)
 					}
 				}
 				if txBytes, ok := netMap["tx_bytes"].(float64); ok {
 					netStats.TxBytes += uint64(txBytes)
 					if !diff {
-						containersNetPerMinutes.TxBytes += uint64(txBytes)
+						containersNetPerMinutes[id].TxBytes += uint64(txBytes)
 					}
 				}
 				if rxPackets, ok := netMap["rx_packets"].(float64); ok {
@@ -464,7 +468,7 @@ func (c *Client) GetContainerStats(id string) (*ContainerStats, error) {
 			Cache:    memoryCache,
 			RSS:      memoryRSS,
 		},
-		NetworksPerSecond: containersNetPerMinutes,
+		NetworksPerSecond: containersNetPerMinutes[id],
 		NetworkStats:      netStats,
 		DiskIOStats:       diskStats,
 		PIDs:              int(pids),
