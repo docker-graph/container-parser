@@ -150,8 +150,8 @@ type ContainerSummary struct {
 	MemPercent     float64           `json:"mem_percent"`
 	NetworkRx      string            `json:"network_rx"`
 	NetworkTx      string            `json:"network_tx"`
-	NetworkRxPS    string            `json:"network_rx_ps"`
-	NetworkTxPS    string            `json:"network_tx_ps"`
+	NetworkRxPS    uint64            `json:"network_rx_ps"`
+	NetworkTxPS    uint64            `json:"network_tx_ps"`
 	IsCompose      bool              `json:"is_compose"`
 	ComposeProject string            `json:"compose_project,omitempty"`
 	ComposeService string            `json:"compose_service,omitempty"`
