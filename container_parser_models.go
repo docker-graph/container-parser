@@ -48,14 +48,15 @@ type Container struct {
 
 // ContainerStats представляет статистику использования ресурсов контейнера
 type ContainerStats struct {
-	ContainerID  string    `json:"container_id"`
-	Timestamp    time.Time `json:"timestamp"`
-	CPUUsage     CPUStats  `json:"cpu_usage"`
-	MemoryUsage  MemStats  `json:"memory_usage"`
-	NetworkStats NetStats  `json:"network_stats"`
-	DiskIOStats  DiskStats `json:"disk_io_stats"`
-	PIDs         int       `json:"pids"`
-	Uptime       string    `json:"uptime"`
+	ContainerID       string        `json:"container_id"`
+	Timestamp         time.Time     `json:"timestamp"`
+	CPUUsage          CPUStats      `json:"cpu_usage"`
+	MemoryUsage       MemStats      `json:"memory_usage"`
+	NetworkStats      NetStats      `json:"network_stats"`
+	DiskIOStats       DiskStats     `json:"disk_io_stats"`
+	PIDs              int           `json:"pids"`
+	Uptime            string        `json:"uptime"`
+	NetworksPerSecond *NetPerSecond `json:"networks_per_second"`
 }
 
 // CPUStats представляет статистику использования CPU
@@ -328,4 +329,10 @@ type VolumeScanStatus struct {
 	Progress    int       `json:"progress"`
 	TotalItems  int       `json:"total_items"`
 	Error       string    `json:"error,omitempty"`
+}
+
+type NetPerSecond struct {
+	Started time.Time `json:"started"`
+	RxBytes uint64    `json:"rx_bytes"`
+	TxBytes uint64    `json:"tx_bytes"`
 }

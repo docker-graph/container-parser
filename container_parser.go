@@ -17,13 +17,19 @@ import (
 	"github.com/docker/docker/client"
 )
 
+var containersNetPerMinutes *NetPerSecond
+
 // NewContainerParser создает новый Docker клиент
 func NewContainerParser() (*Client, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, fmt.Errorf("failed to create docker client: %w", err)
 	}
-
+	containersNetPerMinutes = &NetPerSecond{
+		Started: time.Now(),
+		RxBytes: 0,
+		TxBytes: 0,
+	}
 	return &Client{
 		cli: cli,
 		ctx: context.Background(),
@@ -352,16 +358,28 @@ func (c *Client) GetContainerStats(id string) (*ContainerStats, error) {
 			memPercent = (float64(memoryUsage) / float64(memoryLimit)) * 100
 		}
 	}
-
+	now := time.Now()
+	elapsed := now.Sub(containersNetPerMinutes.Started).Seconds()
+	diff := elapsed >= 60.0
+	if diff {
+		containersNetPerMinutes.RxBytes = 0
+		containersNetPerMinutes.TxBytes = 0
+	}
 	// Пытаемся извлечь данные о сети
 	if networks, ok := statsJSON["networks"].(map[string]interface{}); ok {
 		for _, net := range networks {
 			if netMap, ok := net.(map[string]interface{}); ok {
 				if rxBytes, ok := netMap["rx_bytes"].(float64); ok {
 					netStats.RxBytes += uint64(rxBytes)
+					if !diff {
+						containersNetPerMinutes.RxBytes += uint64(rxBytes)
+					}
 				}
 				if txBytes, ok := netMap["tx_bytes"].(float64); ok {
 					netStats.TxBytes += uint64(txBytes)
+					if !diff {
+						containersNetPerMinutes.TxBytes += uint64(txBytes)
+					}
 				}
 				if rxPackets, ok := netMap["rx_packets"].(float64); ok {
 					netStats.RxPackets += uint64(rxPackets)
@@ -446,10 +464,11 @@ func (c *Client) GetContainerStats(id string) (*ContainerStats, error) {
 			Cache:    memoryCache,
 			RSS:      memoryRSS,
 		},
-		NetworkStats: netStats,
-		DiskIOStats:  diskStats,
-		PIDs:         int(pids),
-		Uptime:       "0s", // Uptime будет рассчитан отдельно при необходимости
+		NetworksPerSecond: containersNetPerMinutes,
+		NetworkStats:      netStats,
+		DiskIOStats:       diskStats,
+		PIDs:              int(pids),
+		Uptime:            "0s", // Uptime будет рассчитан отдельно при необходимости
 	}
 
 	return containerStats, nil
