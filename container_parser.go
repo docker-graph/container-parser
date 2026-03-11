@@ -357,7 +357,6 @@ func (c *Client) GetContainerStats(id string) (*ContainerStats, error) {
 		}
 	}
 	_, ok := containersNetPerMinutes[id]
-	now := time.Now()
 	if !ok {
 		containersNetPerMinutes[id] = &NetPerSecond{
 			Started: time.Now(),
@@ -365,13 +364,7 @@ func (c *Client) GetContainerStats(id string) (*ContainerStats, error) {
 			TxBytes: 0,
 		}
 	}
-	elapsed := now.Sub(containersNetPerMinutes[id].Started).Seconds()
-	diff := elapsed >= 60.0
-	if diff {
-		containersNetPerMinutes[id].Started = time.Now()
-		containersNetPerMinutes[id].RxBytes = 0
-		containersNetPerMinutes[id].TxBytes = 0
-	}
+
 	// Пытаемся извлечь данные о сети
 	if networks, ok := statsJSON["networks"].(map[string]interface{}); ok {
 		for _, net := range networks {
@@ -379,11 +372,9 @@ func (c *Client) GetContainerStats(id string) (*ContainerStats, error) {
 				fmt.Println(netMap)
 				if rxBytes, ok := netMap["rx_bytes"].(float64); ok {
 					netStats.RxBytes += uint64(rxBytes)
-					containersNetPerMinutes[id].RxBytes += uint64(rxBytes)
 				}
 				if txBytes, ok := netMap["tx_bytes"].(float64); ok {
 					netStats.TxBytes += uint64(txBytes)
-					containersNetPerMinutes[id].TxBytes += uint64(txBytes)
 				}
 				if rxPackets, ok := netMap["rx_packets"].(float64); ok {
 					netStats.RxPackets += uint64(rxPackets)
